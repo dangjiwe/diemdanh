@@ -33,7 +33,9 @@
 
     <div class="container">
         <h2>📍 Hệ thống Điểm danh</h2>
-        
+        <div style="background: #e1f5fe; border: 1px solid #81d4fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: #0277bd;">
+            📊 Tiến độ hôm nay: <span id="progress-count" style="color: #d32f2f;">Đang tải...</span>
+        </div>
         <select id="hoTen">
             <option value="">-- Chọn tên của bạn --</option>
             <option value="Bùi Duy Quang">Bùi Duy Quang</option>
@@ -105,7 +107,36 @@
         window.onload = function() {
             const savedName = localStorage.getItem('student_name'); 
             if (savedName) document.getElementById('hoTen').value = savedName;
+            
+            loadProgress(); // 🚀 GỌI HÀM TẢI TIẾN ĐỘ NGAY KHI VỪA MỞ APP
         };
+
+        // ====================================================
+        // HÀM TẢI TIẾN ĐỘ TỪ MÁY CHỦ
+        // ====================================================
+        function loadProgress() {
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "get_progress" }) 
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    let progressText = document.getElementById('progress-count');
+                    progressText.innerText = res.checkedIn + " / " + res.total;
+                    
+                    // Nếu điểm danh đủ 100% thì đổi sang màu xanh lá chúc mừng
+                    if(res.checkedIn >= res.total) {
+                        progressText.style.color = "#4CAF50";
+                        progressText.innerText += " (Đủ quân số ✅)";
+                    } else {
+                        progressText.style.color = "#d32f2f"; // Chưa đủ thì hiện màu đỏ
+                    }
+                }
+            }).catch(e => {
+                document.getElementById('progress-count').innerText = "Lỗi tải số liệu";
+            });
+        }
 
         document.getElementById('hoTen').addEventListener('change', function() {
             if (this.value) localStorage.setItem('student_name', this.value);
