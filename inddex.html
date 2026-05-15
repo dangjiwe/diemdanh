@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Điểm danh</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="apple-touch-icon" href="logo-truong.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f9f9f9; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #4CAF50; margin-top: 0; }
+        select, button { margin-top: 15px; padding: 12px; font-size: 16px; width: 100%; border-radius: 6px; border: 1px solid #aaa; box-sizing: border-box;}
+        .btn-primary { background-color: #4CAF50; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-action { background-color: #008CBA; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-secondary { background-color: #ff9800; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-warning { background-color: #f44336; color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #camera-stream, #preview-canvas { width: 100%; border-radius: 8px; border: 2px solid #ccc; margin-top: 15px; display: none; }
+        #active-camera-controls, #review-controls { display: none; margin-top: 10px; }
+        #active-camera-controls button, #review-controls button { width: 48%; display: inline-block; margin: 0 1%; }
+        #progress-container { width: 100%; margin-top: 15px; background-color: #ddd; border-radius: 13px; display: none; }
+        #progress-bar { width: 0%; height: 20px; background-color: #4CAF50; border-radius: 13px; transition: width 0.4s ease; }
+        #loading-text { font-size: 14px; font-weight: bold; color: #333; margin-top: 5px; display: none; }
+        #gps-status-banner { display:none; background:#ffeb3b; color:#333; padding:8px; border-radius:5px; font-size:13px; margin-bottom:10px; font-weight:bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📍 Hệ thống Điểm danh</h2>
+        <div id="gps-status-banner">⚡ Chế độ GPS đang TẮT (Không yêu cầu định vị)</div>
+        
+        <select id="hoTen">
+            <option value="">-- Chọn tên của bạn --</option>
+            <option value="Bùi Duy Quang">Bùi Duy Quang</option>
+            <option value="Bùi Thị Hồng Dung">Bùi Thị Hồng Dung</option>
+            <option value="Đặng Nguyễn Quyên Như">Đặng Nguyễn Quyên Như</option>
+            <option value="Đặng Tấn Lộc">Đặng Tấn Lộc</option>
+            <option value="Đặng Thị Tuyết Nhi">Đặng Thị Tuyết Nhi</option>
+            <option value="Huỳnh Chí Nguyễn">Huỳnh Chí Nguyễn</option>
+            <option value="Huỳnh Ngọc Quý">Huỳnh Ngọc Quý</option>
+            <option value="Lâm Gia Huy">Lâm Gia Huy</option>
+            <option value="Lê Quỳnh Trân">Lê Quỳnh Trân</option>
+            <option value="Lê Thị Ngọc">Lê Thị Ngọc</option>
+            <option value="Lê Thị Thu Nguyệt">Lê Thị Thu Nguyệt</option>
+            <option value="Mai Hữu Thiện">Mai Hữu Thiện</option>
+            <option value="Ngô Trần Duy Khang">Ngô Trần Duy Khang</option>
+            <option value="Nguyễn Cẩm Thi">Nguyễn Cẩm Thi</option>
+            <option value="Nguyễn Chí Linh">Nguyễn Chí Linh</option>
+            <option value="Nguyễn Công Luận">Nguyễn Công Luận</option>
+            <option value="Nguyễn Hoàng Gia Phúc">Nguyễn Hoàng Gia Phúc</option>
+            <option value="Nguyễn Minh Khang">Nguyễn Minh Khang</option>
+            <option value="Nguyễn Minh Nhựt">Nguyễn Minh Nhựt</option>
+            <option value="Nguyễn Ngọc Anh Thư">Nguyễn Ngọc Anh Thư</option>
+            <option value="Nguyễn Ngọc Hải Yến">Nguyễn Ngọc Hải Yến</option>
+            <option value="Nguyễn Ngọc Phương Uyên">Nguyễn Ngọc Phương Uyên</option>
+            <option value="Nguyễn Ngọc Trâm">Nguyễn Ngọc Trâm</option>
+            <option value="Nguyễn Phước Vinh">Nguyễn Phước Vinh</option>
+            <option value="Nguyễn Thái Tuấn">Nguyễn Thái Tuấn</option>
+            <option value="Nguyễn Thị Mộng Yến">Nguyễn Thị Mộng Yến</option>
+            <option value="Nguyễn Thị Thu Thơm">Nguyễn Thị Thu Thơm</option>
+            <option value="Nguyễn Tuấn Dinh">Nguyễn Tuấn Dinh</option>
+            <option value="Nguyễn Tuấn Kiệt">Nguyễn Tuấn Kiệt</option>
+            <option value="Phạm Như Quỳnh">Phạm Như Quỳnh</option>
+            <option value="Phạm Thị Cẫm Tiên">Phạm Thị Cẫm Tiên</option>
+            <option value="Phạm Văn Đăng">Phạm Văn Đăng</option>
+            <option value="Phạm Yến Vi">Phạm Yến Vi</option>
+            <option value="Phan Duy Trọng Nghĩa">Phan Duy Trọng Nghĩa</option>
+            <option value="Thái Hữu Tài">Thái Hữu Tài</option>
+            <option value="Thái Quốc Đúng">Thái Quốc Đúng</option>
+            <option value="Tống Hoàng Thiên">Tống Hoàng Thiên</option>
+            <option value="Trần Anh Khoa">Trần Anh Khoa</option>
+            <option value="Trần Cao Nguyên">Trần Cao Nguyên</option>
+            <option value="Trần Nhật Quang">Trần Nhật Quang</option>
+            <option value="Trần Trung Tín">Trần Trung Tín</option>
+            <option value="Võ Minh Chí">Võ Minh Chí</option>
+        </select>
+
+        <button id="start-camera-btn" class="btn-primary">📷 Bật Camera</button>
+        <video id="camera-stream" autoplay playsinline muted></video>
+        <canvas id="preview-canvas"></canvas>
+        
+        <div id="active-camera-controls">
+            <button id="switch-camera-btn" class="btn-secondary">🔄 Đổi Cam</button>
+            <button id="capture-btn" class="btn-action">📸 Chụp ảnh</button>
+        </div>
+        
+        <div id="review-controls">
+            <button id="retake-btn" class="btn-warning">✖️ Chụp lại</button>
+            <button id="submit-btn" class="btn-primary">✅ Gửi Điểm danh</button>
+        </div>
+        
+        <div id="progress-container"><div id="progress-bar"></div></div>
+        <div id="loading-text">Đang xử lý...</div>
+    </div>
+
+    <script>
+        // LƯU Ý: THAY LINK APPS SCRIPT CỦA ĐĂNG VÀO ĐÂY
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG0woemJu7h_cXbdl0RAbwReeYIMBxw6uB5x73-NnEigBifTXc1jU2G7EZvWUY2G2P/exec'; 
+        let isGlobalGpsRequired = true;
+
+        window.onload = function() {
+            const savedName = localStorage.getItem('student_name'); 
+            if (savedName) document.getElementById('hoTen').value = savedName;
+            
+            // Lấy cài đặt GPS từ máy chủ
+            fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_settings" }) })
+            .then(r => r.json()).then(res => { 
+                if(res.status === 'success') { 
+                    isGlobalGpsRequired = res.gpsRequired; 
+                    document.getElementById('gps-status-banner').style.display = isGlobalGpsRequired ? 'none' : 'block'; 
+                } 
+            }).catch(e => console.log("Lỗi tải cài đặt"));
+        };
+
+        document.getElementById('hoTen').addEventListener('change', function() {
+            if (this.value) localStorage.setItem('student_name', this.value);
+            else localStorage.removeItem('student_name');
+        });
+
+        // ==========================================
+        // CÁC HÀM XỬ LÝ CAMERA VÀ GPS
+        // ==========================================
+        const video = document.getElementById('camera-stream'); const canvas = document.getElementById('preview-canvas'); const startCameraBtn = document.getElementById('start-camera-btn'); const activeCameraControls = document.getElementById('active-camera-controls'); const switchCameraBtn = document.getElementById('switch-camera-btn'); const captureBtn = document.getElementById('capture-btn'); const reviewControls = document.getElementById('review-controls'); const retakeBtn = document.getElementById('retake-btn'); const submitBtn = document.getElementById('submit-btn'); const hoTenSelect = document.getElementById('hoTen'); const progressContainer = document.getElementById('progress-container'); const progressBar = document.getElementById('progress-bar'); const loadingText = document.getElementById('loading-text'); let currentImageData = null; let currentStream = null; let useFrontCamera = false;
+        
+        function initCamera() { if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); } const constraints = { video: { facingMode: (useFrontCamera ? "user" : "environment") }, audio: false }; navigator.mediaDevices.getUserMedia(constraints).then(stream => { currentStream = stream; video.style.display = 'block'; video.srcObject = stream; startCameraBtn.style.display = 'none'; activeCameraControls.style.display = 'block'; video.onloadedmetadata = () => { video.play(); }; }).catch(err => alert("Lỗi camera: " + err)); }
+        
+        startCameraBtn.addEventListener('click', initCamera); 
+        switchCameraBtn.addEventListener('click', () => { useFrontCamera = !useFrontCamera; initCamera(); });
+        
+        captureBtn.addEventListener('click', () => { const context = canvas.getContext('2d'); canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480; context.drawImage(video, 0, 0, canvas.width, canvas.height); if(useFrontCamera) { context.translate(canvas.width, 0); context.scale(-1, 1); context.drawImage(video, 0, 0, canvas.width, canvas.height); } currentImageData = canvas.toDataURL('image/jpeg', 0.8); video.style.display = 'none'; activeCameraControls.style.display = 'none'; canvas.style.display = 'block'; reviewControls.style.display = 'block'; });
+        
+        retakeBtn.addEventListener('click', () => { currentImageData = null; canvas.style.display = 'none'; reviewControls.style.display = 'none'; video.style.display = 'block'; activeCameraControls.style.display = 'block'; });
+        
+        function runProgressBar() { progressContainer.style.display = 'block'; loadingText.style.display = 'block'; loadingText.innerText = "Đang xử lý..."; progressBar.style.width = '10%'; let progress = 10; const interval = setInterval(() => { progress += Math.random() * 15; if (progress > 85) { progress = 85; clearInterval(interval); } progressBar.style.width = progress + '%'; }, 500); return interval; }
+        function resetButtons() { progressContainer.style.display = 'none'; loadingText.style.display = 'none'; submitBtn.disabled = false; retakeBtn.disabled = false; }
+        
+        submitBtn.addEventListener('click', () => {
+            const hoTen = hoTenSelect.value; if (!hoTen) { alert("Vui lòng chọn tên!"); return; } 
+            submitBtn.disabled = true; retakeBtn.disabled = true;
+            if (!isGlobalGpsRequired) { loadingText.innerText = "🚀 Bỏ qua GPS..."; sendDataToServer(hoTen, 0, 0); return; }
+            progressContainer.style.display = 'block'; loadingText.style.display = 'block'; loadingText.innerText = "📍 Đang lấy vị trí..."; progressBar.style.width = '5%';
+            if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((position) => { sendDataToServer(hoTen, position.coords.latitude, position.coords.longitude); }, (error) => { alert("Lỗi Định vị GPS!"); resetButtons(); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }); } else { alert("Thiết bị không hỗ trợ GPS."); resetButtons(); }
+        });
+        
+        function sendDataToServer(hoTen, lat, lng) { 
+            const progressInterval = runProgressBar(); 
+            // KHÔNG GỬI EMAIL NỮA
+            fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "check_in", hoTen: hoTen, image: currentImageData, lat: lat, lng: lng }) })
+            .then(r => r.json()).then(res => { 
+                clearInterval(progressInterval); progressBar.style.width = '100%'; loadingText.innerText = res.status === 'success' ? "Thành công!" : "Lỗi!"; 
+                setTimeout(() => { 
+                    resetButtons(); progressBar.style.width = '0%'; 
+                    if(res.status === 'success') { alert(res.message); retakeBtn.click(); } 
+                    else { alert(res.message); } 
+                }, 500); 
+            }).catch(() => { alert('Lỗi mạng!'); clearInterval(progressInterval); resetButtons(); }); 
+        }
+    </script>
+    <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('PWA OK')).catch(err => console.log('Lỗi PWA:', err)); }); } </script>   
+</body>
+</html>
