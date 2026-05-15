@@ -127,20 +127,38 @@
         function resetButtons() { progressContainer.style.display = 'none'; loadingText.style.display = 'none'; submitBtn.disabled = false; retakeBtn.disabled = false; }
         
         // GỬI THẲNG LÊN SERVER, BỎ QUA BƯỚC HỎI GPS
+        // GỬI THẲNG LÊN SERVER, CÓ GẮN MÁY ÉP CUNG LỖI
         submitBtn.addEventListener('click', () => {
             const hoTen = hoTenSelect.value; if (!hoTen) { alert("Vui lòng chọn tên!"); return; } 
             submitBtn.disabled = true; retakeBtn.disabled = true;
             
             const progressInterval = runProgressBar(); 
+            
             fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "check_in", hoTen: hoTen, image: currentImageData }) })
-            .then(r => r.json()).then(res => { 
+            .then(async r => { 
+                // Bắt tận tay nếu server từ chối mở cửa
+                if (!r.ok) throw new Error("Mã lỗi HTTP: " + r.status);
+                
+                const text = await r.text();
+                try {
+                    return JSON.parse(text); // Cố gắng dịch thành JSON
+                } catch(e) {
+                    // Nếu dịch không được tức là dính lỗi CORS hoặc sai link
+                    throw new Error("Lỗi trả về không phải JSON (Có thể sai Link hoặc chưa mở quyền Anyone):\n" + text.substring(0, 100));
+                }
+            })
+            .then(res => { 
                 clearInterval(progressInterval); progressBar.style.width = '100%'; loadingText.innerText = res.status === 'success' ? "Thành công!" : "Lỗi!"; 
                 setTimeout(() => { 
                     resetButtons(); progressBar.style.width = '0%'; 
                     if(res.status === 'success') { alert(res.message); retakeBtn.click(); } 
-                    else { alert(res.message); } 
+                    else { alert("Lỗi từ Code.gs: " + res.message); } 
                 }, 500); 
-            }).catch(() => { alert('Lỗi mạng!'); clearInterval(progressInterval); resetButtons(); }); 
+            }).catch(err => { 
+                // THAY VÌ BÁO "LỖI MẠNG" CHUNG CHUNG, NÓ SẼ KHAI RA BỆNH THẬT!
+                alert('🚨 BẮT ĐƯỢC LỖI THẬT:\n\n' + err.message); 
+                clearInterval(progressInterval); resetButtons(); 
+            }); 
         });
     </script>
     <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('PWA OK')).catch(err => console.log('Lỗi PWA:', err)); }); } </script>   
