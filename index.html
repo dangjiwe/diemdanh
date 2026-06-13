@@ -33,8 +33,16 @@
 
     <div class="container">
         <h2>📍 Hệ thống Điểm danh</h2>
-        <div style="background: #e1f5fe; border: 1px solid #81d4fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: #0277bd;">
-            📊 Tiến độ hôm nay: <span id="progress-count" style="color: #d32f2f;">Đang tải...</span>
+        <div style="background: #e1f5fe; border: 1px solid #81d4fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; color: #0277bd;">📊 Tiến độ: <span id="progress-count" style="color: #d32f2f;">Đang tải...</span></span>
+                <button id="toggle-missing-btn" style="background: #0288d1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none; margin-top: 0; width: auto;">👁️ Xem chi tiết</button>
+            </div>
+            
+            <div id="missing-list-container" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #b3e5fc;">
+                <p style="margin: 0 0 5px 0; font-size: 13px; color: #d32f2f; font-weight: bold;">⚠️ Những người chưa điểm danh:</p>
+                <ul id="missing-names-list" style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; max-height: 150px; overflow-y: auto;"></ul>
+            </div>
         </div>
         <select id="hoTen">
             <option value="">-- Chọn tên của bạn --</option>
@@ -112,7 +120,7 @@
         };
 
         // ====================================================
-        // HÀM TẢI TIẾN ĐỘ TỪ MÁY CHỦ
+        // HÀM TẢI TIẾN ĐỘ & DANH SÁCH TỪ MÁY CHỦ
         // ====================================================
         function loadProgress() {
             fetch(APPS_SCRIPT_URL, { 
@@ -125,12 +133,27 @@
                     let progressText = document.getElementById('progress-count');
                     progressText.innerText = res.checkedIn + " / " + res.total;
                     
-                    // Nếu điểm danh đủ 100% thì đổi sang màu xanh lá chúc mừng
+                    const btnToggle = document.getElementById('toggle-missing-btn');
+                    const missingList = document.getElementById('missing-names-list');
+                    
+                    // Nếu đủ quân số
                     if(res.checkedIn >= res.total) {
                         progressText.style.color = "#4CAF50";
                         progressText.innerText += " (Đủ quân số ✅)";
+                        btnToggle.style.display = 'none'; // Giấu nút đi vì đã đủ người
+                        document.getElementById('missing-list-container').style.display = 'none';
                     } else {
-                        progressText.style.color = "#d32f2f"; // Chưa đủ thì hiện màu đỏ
+                        // Nếu chưa đủ quân số
+                        progressText.style.color = "#d32f2f";
+                        btnToggle.style.display = 'inline-block'; // Hiện nút xem chi tiết
+                        
+                        // Nạp tên những người nợ vào danh sách
+                        missingList.innerHTML = "";
+                        res.missing.forEach(name => {
+                            let li = document.createElement('li');
+                            li.innerText = name;
+                            missingList.appendChild(li);
+                        });
                     }
                 }
             }).catch(e => {
@@ -138,9 +161,18 @@
             });
         }
 
-        document.getElementById('hoTen').addEventListener('change', function() {
-            if (this.value) localStorage.setItem('student_name', this.value);
-            else localStorage.removeItem('student_name');
+        // BẮT SỰ KIỆN KHI BẤM NÚT "XEM CHI TIẾT"
+        document.getElementById('toggle-missing-btn').addEventListener('click', function() {
+            const container = document.getElementById('missing-list-container');
+            if (container.style.display === 'none') {
+                container.style.display = 'block'; // Mở ra
+                this.innerText = "🙈 Ẩn danh sách"; // Đổi tên nút
+                this.style.background = "#f44336";
+            } else {
+                container.style.display = 'none'; // Giấu đi
+                this.innerText = "👁️ Xem chi tiết"; // Đổi tên nút lại
+                this.style.background = "#0288d1";
+            }
         });
 
         const video = document.getElementById('camera-stream'); const canvas = document.getElementById('preview-canvas'); const startCameraBtn = document.getElementById('start-camera-btn'); const activeCameraControls = document.getElementById('active-camera-controls'); const switchCameraBtn = document.getElementById('switch-camera-btn'); const captureBtn = document.getElementById('capture-btn'); const reviewControls = document.getElementById('review-controls'); const retakeBtn = document.getElementById('retake-btn'); const submitBtn = document.getElementById('submit-btn'); const hoTenSelect = document.getElementById('hoTen'); const progressContainer = document.getElementById('progress-container'); const progressBar = document.getElementById('progress-bar'); const loadingText = document.getElementById('loading-text'); let currentImageData = null; let currentStream = null; let useFrontCamera = false;
