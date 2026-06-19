@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -177,12 +179,65 @@
 
         const video = document.getElementById('camera-stream'); const canvas = document.getElementById('preview-canvas'); const startCameraBtn = document.getElementById('start-camera-btn'); const activeCameraControls = document.getElementById('active-camera-controls'); const switchCameraBtn = document.getElementById('switch-camera-btn'); const captureBtn = document.getElementById('capture-btn'); const reviewControls = document.getElementById('review-controls'); const retakeBtn = document.getElementById('retake-btn'); const submitBtn = document.getElementById('submit-btn'); const hoTenSelect = document.getElementById('hoTen'); const progressContainer = document.getElementById('progress-container'); const progressBar = document.getElementById('progress-bar'); const loadingText = document.getElementById('loading-text'); let currentImageData = null; let currentStream = null; let useFrontCamera = false;
         
-        function initCamera() { if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); } const constraints = { video: { facingMode: (useFrontCamera ? "user" : "environment") }, audio: false }; navigator.mediaDevices.getUserMedia(constraints).then(stream => { currentStream = stream; video.style.display = 'block'; video.srcObject = stream; startCameraBtn.style.display = 'none'; activeCameraControls.style.display = 'block'; video.onloadedmetadata = () => { video.play(); }; }).catch(err => alert("Lỗi camera: " + err)); }
+        let faceTrackerTask = null; // Biến giữ radar AI
+
+        function initCamera() { 
+            if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); } 
+            if (faceTrackerTask) { faceTrackerTask.stop(); } // Tắt radar cũ nếu có
+            
+            const constraints = { 
+                video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } }, 
+                audio: false 
+            }; 
+            
+            navigator.mediaDevices.getUserMedia(constraints).then(stream => { 
+                currentStream = stream; 
+                video.style.display = 'block'; 
+                video.srcObject = stream; 
+                startCameraBtn.style.display = 'none'; 
+                activeCameraControls.style.display = 'block'; 
+                
+                video.onloadedmetadata = () => { 
+                    video.play(); 
+                    startFaceTracking(); // GỌI AI RA LÀM VIỆC SAU KHI CAM LÊN HÌNH
+                }; 
+            }).catch(err => alert("Lỗi camera: " + err)); 
+        }
+
+        // ====================================================
+        // HỆ THỐNG AI QUÉT MẶT (CHỈ SÁNG NÚT CHỤP KHI CÓ NGƯỜI)
+        // ====================================================
+        function startFaceTracking() {
+            captureBtn.disabled = true;
+            captureBtn.innerText = "🔍 Đang tìm khuôn mặt...";
+            captureBtn.style.background = "#9e9e9e";
+
+            const tracker = new tracking.ObjectTracker('face');
+            tracker.setInitialScale(4);
+            tracker.setStepSize(2);
+            tracker.setEdgesDensity(0.1);
+
+            faceTrackerTask = tracking.track('#camera-stream', tracker);
+
+            tracker.on('track', function(event) {
+                if (event.data.length === 0) {
+                    // Cảnh vật, không thấy mặt -> Tắt nút
+                    captureBtn.disabled = true;
+                    captureBtn.innerText = "❌ Yêu cầu đưa mặt vào Cam!";
+                    captureBtn.style.background = "#f44336";
+                } else {
+                    // Thấy mặt người -> Sáng nút cho chụp
+                    captureBtn.disabled = false;
+                    captureBtn.innerText = "📸 Chụp ảnh";
+                    captureBtn.style.background = "#008CBA";
+                }
+            });
+        }
         
         startCameraBtn.addEventListener('click', initCamera); 
         switchCameraBtn.addEventListener('click', () => { useFrontCamera = !useFrontCamera; initCamera(); });
         
-        captureBtn.addEventListener('click', () => { const context = canvas.getContext('2d'); canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480; context.drawImage(video, 0, 0, canvas.width, canvas.height); if(useFrontCamera) { context.translate(canvas.width, 0); context.scale(-1, 1); context.drawImage(video, 0, 0, canvas.width, canvas.height); } currentImageData = canvas.toDataURL('image/jpeg', 0.8); video.style.display = 'none'; activeCameraControls.style.display = 'none'; canvas.style.display = 'block'; reviewControls.style.display = 'block'; });
+        captureBtn.addEventListener('click', () => { if (faceTrackerTask) faceTrackerTask.stop(); const context = canvas.getContext('2d'); canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480; context.drawImage(video, 0, 0, canvas.width, canvas.height); if(useFrontCamera) { context.translate(canvas.width, 0); context.scale(-1, 1); context.drawImage(video, 0, 0, canvas.width, canvas.height); } currentImageData = canvas.toDataURL('image/jpeg', 0.95); video.style.display = 'none'; activeCameraControls.style.display = 'none'; canvas.style.display = 'block'; reviewControls.style.display = 'block'; });
         
         retakeBtn.addEventListener('click', () => { currentImageData = null; canvas.style.display = 'none'; reviewControls.style.display = 'none'; video.style.display = 'block'; activeCameraControls.style.display = 'block'; });
         
