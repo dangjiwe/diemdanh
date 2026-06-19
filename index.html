@@ -237,7 +237,7 @@
         startCameraBtn.addEventListener('click', initCamera); 
         switchCameraBtn.addEventListener('click', () => { useFrontCamera = !useFrontCamera; initCamera(); });
         
-        captureBtn.addEventListener('click', () => { if (faceTrackerTask) faceTrackerTask.stop(); const context = canvas.getContext('2d'); canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480; context.drawImage(video, 0, 0, canvas.width, canvas.height); if(useFrontCamera) { context.translate(canvas.width, 0); context.scale(-1, 1); context.drawImage(video, 0, 0, canvas.width, canvas.height); } currentImageData = canvas.toDataURL('image/jpeg', 0.95); video.style.display = 'none'; activeCameraControls.style.display = 'none'; canvas.style.display = 'block'; reviewControls.style.display = 'block'; });
+        captureBtn.addEventListener('click', () => { const context = canvas.getContext('2d'); canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480; context.drawImage(video, 0, 0, canvas.width, canvas.height); if(useFrontCamera) { context.translate(canvas.width, 0); context.scale(-1, 1); context.drawImage(video, 0, 0, canvas.width, canvas.height); } currentImageData = canvas.toDataURL('image/jpeg', 0.95); video.style.display = 'none'; activeCameraControls.style.display = 'none'; canvas.style.display = 'block'; reviewControls.style.display = 'block'; });
         
         retakeBtn.addEventListener('click', () => { currentImageData = null; canvas.style.display = 'none'; reviewControls.style.display = 'none'; video.style.display = 'block'; activeCameraControls.style.display = 'block'; });
         
